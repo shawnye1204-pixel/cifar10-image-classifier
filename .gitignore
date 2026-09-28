@@ -1,1 +1,17 @@
 cifar10_image_classification_pipeline.md
+# Dataset and model checkpoints
+data/
+checkpoints/
+
+# Python caches and environments
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# Local settings
+.vscode/
+.DS_Store
+.env
