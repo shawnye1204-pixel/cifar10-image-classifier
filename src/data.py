@@ -1,7 +1,7 @@
 from torchvision.datasets import CIFAR10
 from torchvision import transforms
 import torch
-from torch.utils.data import random_split
+from torch.utils.data import Subset
 from . import config
 from torch.utils.data import DataLoader
 from pathlib import Path
@@ -10,38 +10,65 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = PROJECT_ROOT / "data"
 
-# Define the transformation to convert images to tensors
-transform = transforms.Compose([
+# Fixed preprocessing for validation and test images
+eval_transform = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize(
-        (0.5, 0.5, 0.5), 
-        (0.5, 0.5, 0.5)
-    )
+        (0.5, 0.5, 0.5),
+        (0.5, 0.5, 0.5),
+    ),
 ])
 
+# Optional augmentation for training images
+if config.USE_AUGMENTATION:
+    train_transform = transforms.Compose([
+        transforms.RandomCrop(32, padding=4),
+        transforms.RandomHorizontalFlip(p=0.5),
+        transforms.ToTensor(),
+        transforms.Normalize(
+            (0.5, 0.5, 0.5),
+            (0.5, 0.5, 0.5),
+        ),
+    ])
+else:
+    train_transform = eval_transform
 
 # Load the CIFAR-10 dataset
+# Same training images, but separate transforms
 full_train_dataset = CIFAR10(
     root=DATA_DIR,
     train=True,
     download=True,
-    transform=transform
+    transform=train_transform,
+)
+
+full_val_dataset = CIFAR10(
+    root=DATA_DIR,
+    train=True,
+    download=True,
+    transform=eval_transform,
 )
 
 test_dataset = CIFAR10(
     root=DATA_DIR,
     train=False,
     download=True,
-    transform=transform
+    transform=eval_transform,
 )
 
+# Keep the same split across experiments
+generator = torch.Generator().manual_seed(config.SPLIT_SEED)
+indices = torch.randperm(
+    len(full_train_dataset),
+    generator=generator,
+).tolist()
 
-# Split the full training dataset into training and validation datasets
-train_dataset, val_dataset = random_split(
-    full_train_dataset,
-    [45000, 5000],
-    generator=torch.Generator().manual_seed(config.SEED)
-)
+train_indices = indices[:45000]
+val_indices = indices[45000:]
+
+train_dataset = Subset(full_train_dataset, train_indices)
+val_dataset = Subset(full_val_dataset, val_indices)
+
 
 train_loader = DataLoader(
     train_dataset,

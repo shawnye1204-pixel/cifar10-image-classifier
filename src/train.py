@@ -16,7 +16,15 @@ def train():
         lr=config.LEARNING_RATE
     )
 
-    
+    scheduler = None
+    if config.USE_LR_SCHEDULER:
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer,
+            mode=config.LR_SCHEDULER_MODE,
+            factor=config.LR_SCHEDULER_FACTOR,
+            patience=config.LR_SCHEDULER_PATIENCE,
+            min_lr=config.MIN_LR,
+        )
 
     #=========================
     # Paths
@@ -43,6 +51,8 @@ def train():
 
     num_epochs = config.NUM_EPOCHS
     for epoch in range(num_epochs):
+
+        current_lr = optimizer.param_groups[0]["lr"]
         
         # =========================
         # Training
@@ -114,6 +124,9 @@ def train():
         val_loss = val_running_loss / val_total
         val_accuracy = val_correct / val_total
 
+        if scheduler is not None:
+            scheduler.step(val_loss)
+
         # =========================
         # Save model checkpoint
         # =========================
@@ -138,10 +151,11 @@ def train():
         
         history.append({
             "epoch": epoch + 1,
+            "learning_rate": current_lr,
             "train_loss": train_loss,
             "train_accuracy": train_accuracy,
             "val_loss": val_loss,
-            "val_accuracy": val_accuracy
+            "val_accuracy": val_accuracy,
         })
 
         # Save training history to CSV
