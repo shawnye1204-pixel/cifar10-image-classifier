@@ -3,13 +3,20 @@ import torch.nn as nn
 from . import config
 from .data import train_loader,val_loader
 from .model import CNN
+from .device import get_device
 from pathlib import Path
 import pandas as pd
 
 def train():
     torch.manual_seed(config.SEED)
 
-    model = CNN(num_classes=config.NUM_CLASSES)
+    device = get_device()
+    print(f"Using device: {device}")
+    if device.type == "cuda":
+        print(f"GPU: {torch.cuda.get_device_name(device)}")
+
+    # Move the model before creating the optimizer.
+    model = CNN(num_classes=config.NUM_CLASSES).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(
         model.parameters(),
@@ -67,6 +74,9 @@ def train():
 
 
         for images, labels in train_loader:
+            # Keep each batch on the same device as the model.
+            images = images.to(device)
+            labels = labels.to(device)
 
             optimizer.zero_grad()
 
@@ -101,6 +111,8 @@ def train():
         with torch.no_grad():
 
             for images, labels in val_loader:
+                images = images.to(device)
+                labels = labels.to(device)
 
                 outputs = model(images)
 

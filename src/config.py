@@ -15,3 +15,6 @@ LR_SCHEDULER_MODE = "min"
 LR_SCHEDULER_FACTOR = 0.5
 LR_SCHEDULER_PATIENCE = 3
 MIN_LR = 1e-5
+
+# Prefer CUDA, then MPS, then CPU; set explicitly to require a device.
+DEVICE = "auto"

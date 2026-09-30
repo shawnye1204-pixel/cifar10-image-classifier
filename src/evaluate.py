@@ -8,6 +8,7 @@ from sklearn.metrics import confusion_matrix
 from . import config
 from .data import test_loader
 from .model import CNN
+from .device import get_device
 
 
 def evaluate():
@@ -50,10 +51,14 @@ def evaluate():
     # Load model
     # =========================
 
+    device = get_device()
+    print(f"Using device: {device}")
+
     model = CNN(
         num_classes=config.NUM_CLASSES
     )
 
+    # Load on CPU so checkpoints remain portable across devices.
     state_dict = torch.load(
         checkpoint_path,
         map_location="cpu",
@@ -61,6 +66,7 @@ def evaluate():
     )
     #load the best accuracy model weights from the checkpoint
     model.load_state_dict(state_dict)
+    model = model.to(device)
 
     model.eval()
 
@@ -108,12 +114,13 @@ def evaluate():
 
         for images, labels in test_loader:
 
-            outputs = model(images)
+            outputs = model(images.to(device))
 
+            # Keep predictions, labels, and plotting images on CPU.
             predictions = torch.argmax(
                 outputs,
                 dim=1
-            )
+            ).cpu()
 
             # Overall accuracy
             total_correct += (
