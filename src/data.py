@@ -3,6 +3,7 @@ from torchvision import transforms
 import torch
 from torch.utils.data import Subset
 from . import config
+from .device import get_device
 from torch.utils.data import DataLoader
 from pathlib import Path
 
@@ -70,24 +71,32 @@ train_dataset = Subset(full_train_dataset, train_indices)
 val_dataset = Subset(full_val_dataset, val_indices)
 
 
+# Keep CPU and MPS data loading unchanged.
+use_cuda = get_device().type == "cuda"
+train_workers = config.CUDA_NUM_WORKERS if use_cuda else 0
+
 train_loader = DataLoader(
     train_dataset,
     batch_size=config.BATCH_SIZE,
     shuffle=True,
-    num_workers=0
+    num_workers=train_workers,
+    pin_memory=use_cuda,
+    persistent_workers=train_workers > 0,
 )
 
 val_loader = DataLoader(
     val_dataset,
     batch_size=config.BATCH_SIZE,
     shuffle=False,
-    num_workers=0
+    num_workers=0,
+    pin_memory=use_cuda,
 )
 test_loader = DataLoader(
     test_dataset,
     batch_size=config.BATCH_SIZE,
     shuffle=False,
-    num_workers=0
+    num_workers=0,
+    pin_memory=use_cuda,
 )
 
 

@@ -55,7 +55,9 @@ def evaluate():
     print(f"Using device: {device}")
 
     model = CNN(
-        num_classes=config.NUM_CLASSES
+        num_classes=config.NUM_CLASSES,
+        use_batch_norm=config.USE_BATCH_NORM,
+        use_extra_conv=config.USE_EXTRA_CONV,
     )
 
     # Load on CPU so checkpoints remain portable across devices.

@@ -1,0 +1,24 @@
+Using device: mps
+Overall Test Accuracy: 84.55%
+
+Per-class Accuracy:
+  airplane: 86.00%
+automobile: 93.10%
+      bird: 77.50%
+       cat: 65.60%
+      deer: 83.40%
+       dog: 79.90%
+      frog: 89.40%
+     horse: 86.40%
+      ship: 91.70%
+     truck: 92.50%
+
+Most Common Errors:
+cat → dog: 154
+dog → cat: 101
+bird → deer: 57
+cat → bird: 52
+deer → bird: 46
+
+Saved: /Users/yokou/Projects/cifar10-image-classifier/outputs/figures/mps_bn_extra_conv_seed44_60ep/confusion_matrix.png
+Saved: /Users/yokou/Projects/cifar10-image-classifier/outputs/figures/mps_bn_extra_conv_seed44_60ep/misclassified_examples.png

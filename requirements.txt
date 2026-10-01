@@ -1,6 +1,7 @@
 # Model and data
 torch==2.14.0
 torchvision==0.29.0
+Pillow==12.3.0
 numpy==2.4.6
 
 # Metrics and plots
